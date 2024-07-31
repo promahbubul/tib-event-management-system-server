@@ -32,6 +32,7 @@ async function run() {
     await client.connect();
 
     const eventCollection = client.db("tib-mis").collection("events");
+    const userCollection = client.db("tib-mis").collection("users");
 
     // event post
     app.post("/api/v1/event", async (req, res) => {
@@ -88,6 +89,71 @@ async function run() {
       console.log(result);
       //   console.log(updateEvent);
       res.send(result);
+    });
+
+    //--------------- User -------------- //
+    // Add New User
+    app.post("/api/v1/user", async (req, res) => {
+      const user = req.body;
+      const result = await userCollection.insertOne(user);
+      res.send(result);
+      console.log(user);
+    });
+
+    // get all user
+    app.get("/api/v1/user", async (req, res) => {
+      const cursor = await userCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+      console.log(result);
+    });
+    // get single user
+    app.get("/api/v1/user/:id", async (req, res) => {
+      const id = req.params.id;
+      if (id.length < 24) {
+        return;
+      }
+      const query = { _id: new ObjectId(id) };
+      const result = await userCollection.findOne(query);
+      console.log(result);
+      res.send(result);
+    });
+
+    // delete user
+    app.delete("/api/v1/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await userCollection.deleteOne(filter);
+      res.send(result);
+    });
+
+    // Update User
+    app.put("/api/v1/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const newUser = req.body;
+      const cursor = { _id: new ObjectId(id) };
+      const result = await userCollection.updateOne(cursor, {
+        $set: {
+          name: newUser.name,
+          number: newUser.number,
+          email: newUser.email,
+          password: newUser.password,
+          userType: newUser.userType,
+          userStatus: newUser.userStatus,
+          idCard: newUser.idCard,
+        },
+      });
+
+      //   name,
+      //   number,
+      //   email,
+      //   password,
+      //   userType,
+      //   userStatus,
+      //   idCard,
+      // const
+      res.send(result);
+      // console.log(newUser);
     });
 
     await client.db("admin").command({ ping: 1 });
