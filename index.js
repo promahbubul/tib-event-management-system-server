@@ -46,7 +46,7 @@ async function run() {
 
     // getAll Events
     app.get("/api/v1/events", async (req, res) => {
-      const cursor = await eventCollection.find();
+      const cursor = await eventCollection.find().sort({ _id: -1 });
       const result = await cursor.toArray();
       res.send(result);
     });
