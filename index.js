@@ -33,6 +33,7 @@ async function run() {
     await client.connect();
 
     const eventCollection = client.db("tib-mis").collection("events");
+    const filterCollection = client.db("tib-mis").collection("filter");
     const userCollection = client.db("tib-mis").collection("users");
 
     // event post
@@ -92,10 +93,85 @@ async function run() {
       res.send(result);
     });
 
-    // event Filter
-    app.get("/api/v1/event/:query", async (req, res) => {
-      const query = req.params.query;
-      console.log(params);
+    // event Filter post
+    app.post("/api/v1/filter-event", async (req, res) => {
+      const data = req.body;
+      const { year, month, sectorName, cccName, clusterName, eventName } = data;
+
+      let endEventDate;
+
+      if (year && !month) {
+        endEventDate = `^${year}-`;
+      } else {
+        switch (month) {
+          case "January":
+            endEventDate = `^${year}-01-`;
+            break;
+          case "February":
+            endEventDate = `^${year}-02-`;
+            break;
+          case "March":
+            endEventDate = `^${year}-03-`;
+            break;
+          case "April":
+            endEventDate = `^${year}-04-`;
+            break;
+          case "May":
+            endEventDate = `^${year}-05-`;
+            break;
+          case "June":
+            endEventDate = `^${year}-06-`;
+            break;
+          case "July":
+            endEventDate = `^${year}-07-`;
+            break;
+          case "August":
+            endEventDate = `^${year}-08-`;
+            break;
+          case "September":
+            endEventDate = `^${year}-09-`;
+            break;
+          case "October":
+            endEventDate = `^${year}-10-`;
+            break;
+          case "November":
+            endEventDate = `^${year}-11-`;
+            break;
+          case "December":
+            endEventDate = `^${year}-12-`;
+            break;
+          default:
+            console.log("Invalid month");
+            break;
+        }
+      }
+
+      const result = await eventCollection
+        .find({
+          ...(cccName && { "genInfo.cccName": cccName }),
+          ...(clusterName && { "genInfo.clusterName": clusterName }),
+          ...(sectorName && { "genInfo.sectorName": sectorName }),
+          ...(eventName && { "genInfo.eventName": eventName }),
+          ...(endEventDate && {
+            "genInfo.endEventDate": { $regex: endEventDate },
+          }),
+          // "genInfo.endEventDate": { $regex: "^2023-" },
+        })
+        .toArray();
+
+      await filterCollection.deleteMany({});
+      const id = await filterCollection.insertOne({ result });
+      // console.log(id);
+      // console.log(result);
+      console.log(id);
+      res.send(result);
+    });
+
+    // get filter event
+    app.get("/api/v1/filter-event", async (req, res) => {
+      const result = await filterCollection.find().toArray();
+      console.log(result);
+      res.send(result);
     });
 
     //--------------- User -------------- //
