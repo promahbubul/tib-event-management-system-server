@@ -83,6 +83,7 @@ async function run() {
           genInfo: { ...updateEvent.genInfo },
           programDetails: { ...updateEvent.programDetails },
           participants: { ...updateEvent.participants },
+          photographs: [...updateEvent.photographs],
         },
       };
 
