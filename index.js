@@ -92,6 +92,12 @@ async function run() {
       res.send(result);
     });
 
+    // event Filter
+    app.get("/api/v1/event/:query", async (req, res) => {
+      const query = req.params.query;
+      console.log(params);
+    });
+
     //--------------- User -------------- //
     // Add New User
     app.post("/api/v1/user", async (req, res) => {
